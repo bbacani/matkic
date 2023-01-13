@@ -13,16 +13,16 @@ with app.app_context():
 
 
 # Uncomment for local testing
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.query.get(int(user_id))
 
 
 # Comment for local testing
-# @login_manager.request_loader
-# def load_user_from_request(req):
-#     user_id = req.headers.get('id')
-#     return User.query.get(int(user_id))
+@login_manager.request_loader
+def load_user_from_request(req):
+    user_id = req.headers.get('id')
+    return User.query.get(int(user_id))
 
 
 @login_manager.unauthorized_handler
@@ -75,7 +75,8 @@ def login():
     user = User.query.filter_by(username=data.get('username')).first()
     if user and bcrypt.checkpw(data.get('password').encode('utf-8'), user.password.encode('utf-8')):
         login_user(user)
-        return jsonify({'id': str(user.id), 'username': user.username}), 200, {'Content-Type': 'application/json'}
+        return jsonify({'id': str(user.id), 'username': user.username, 'password': data.get('password')}), 200, \
+            {'Content-Type': 'application/json'}
     else:
         message = {'message': 'Krivi nadimak ili lozinka.'}
         return jsonify(message), 401, {'Content-Type': 'application/json'}
@@ -123,7 +124,7 @@ def send_answers():
     user = User.query.get(current_user.id)
     game_mode = user.game_mode
     level = user.level
-    total_time = int(data["time"])
+    total_time = int(float(data["time"]))
     score = sum(data["answers"]) / len(data["answers"]) * 100 * level
 
     # Deduct one point for every second taken
@@ -147,8 +148,9 @@ def send_answers():
         # Add the leaderboard entry to the database
         db.session.add(new_entry)
     else:
-        # Update Leaderboard entry for the user
-        leaderboard.score = int(score)
+        # Update Leaderboard entry for the user if higher
+        if leaderboard.score < int(score):
+            leaderboard.score = int(score)
     db.session.commit()
     return '', 200
 

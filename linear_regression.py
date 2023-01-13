@@ -8,7 +8,7 @@ def treniraj(srednje_vrijednosti, zadnji_rezultati):
     # zadnjiRezultati je varijabla koja prima zadnji broj bodova koji su ucenici ostvarili
     x = np.array(srednje_vrijednosti).reshape((-1, 1))
     y = np.array(zadnji_rezultati)
-    model = LinearRegression().fit(srednje_vrijednosti, zadnji_rezultati)
+    model = LinearRegression().fit(x, y)
 
     return model
 

@@ -19,7 +19,7 @@ class User(db.Model, UserMixin):
     game_mode = db.Column(db.String(100))
     level = db.Column(db.Integer)
 
-    def __init__(self, email, username, password, game_mode=None, level=None):
+    def __init__(self, email, username, password, game_mode="addition", level=1):
         # check if email is valid
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             raise ValueError("Invalid email address.")
