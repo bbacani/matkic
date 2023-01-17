@@ -142,3 +142,8 @@ def get_all_medians(game_mode):
     for med in medians:
         median_list.append(med[0])
     return median_list
+
+
+def get_count(game_mode):
+    score_count = db.session.query(Score).filter_by(game_mode=game_mode).count()
+    return score_count

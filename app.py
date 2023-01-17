@@ -174,24 +174,33 @@ def send_answers():
     return '', 200
 
 
-@app.route('/leaderboard', methods=['GET'])
-@login_required
-def get_leaderboard_of_last_game():
-    user = User.query.get(current_user.id)
-    game_mode = user.game_mode
-    if not game_mode:
-        message = {'message': 'Missing game_mode parameter in the query string.'}
-        return jsonify(message), 400, {'Content-Type': 'application/json'}
-    return redirect(url_for('get_leaderboard', game_mode=game_mode))
+# @app.route('/leaderboard', methods=['GET'])
+# @login_required
+# def get_leaderboard_of_last_game():
+#     user = User.query.get(current_user.id)
+#     game_mode = user.game_mode
+#     if not game_mode:
+#         message = {'message': 'Missing game_mode parameter in the query string.'}
+#         return jsonify(message), 400, {'Content-Type': 'application/json'}
+#     return redirect(url_for('get_leaderboard', game_mode=game_mode))
 
 
-@app.route('/leaderboard/<string:game_mode>', methods=['GET'])
+@app.route('/leaderboard/<string:game_mode>', methods=['POST'])
 @login_required
 def get_leaderboard(game_mode):
-    # Train
-    model = treniraj(get_all_medians(game_mode), get_all_last_scores(game_mode))
-    # Predict
-    prediction = predvidi(get_last_score(game_mode, current_user.id), model)
+    data = request.json
+    message = None
+
+    if get_count(game_mode) > 10 and data["afterGame"]:
+        user = User.query.get(current_user.id)
+        level = user.level
+        # Train
+        model = treniraj(get_all_medians(game_mode), get_all_last_scores(game_mode))
+        # Predict
+        prediction = predvidi(get_last_score(game_mode, current_user.id), model)
+        # Message
+        message = vrati_poruku(predvidjeni_bodovi=prediction, realni_bodovi=get_last_score(game_mode, current_user.id),
+                               level=level)
 
     # Determine which leaderboard table to query
     try:
@@ -216,8 +225,6 @@ def get_leaderboard(game_mode):
             "isUser": True if current_user.id == data.user.id is not None else False
         })
         ranking += 1
-
-    message = vrati_poruku(predvidjeni_bodovi=prediction, realni_bodovi=get_last_score(game_mode, current_user.id))
 
     # Return the leaderboard data as a JSON object
     return jsonify({'items': leaderboard_list, 'message': message}), 200, {'Content-Type': 'application/json'}

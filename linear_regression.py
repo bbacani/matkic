@@ -22,7 +22,7 @@ def predvidi(zadnji_bodovi, model):
     return model.intercept_ + model.coef_ * x
 
 
-def vrati_poruku(predvidjeni_bodovi, realni_bodovi):
+def vrati_poruku(predvidjeni_bodovi, realni_bodovi, level):
     # fja prima predvidjeni broj bodova i ostvareni broj bodova te ovisno o ostvarenom broju bodova salje poruku
     pozitivne_poruke = ['Bravo! Samo tako nastavi!', 'Odlično, pucaš prema vrhu!', 'Ubrzo ćeš biti na vrhu ljestvice!',
                         'Svaka čašt, majstore!', 'Pa ti ćeš postati pravi matkić.', 'Ostvaren je izvrstan rezultat.',
@@ -34,7 +34,7 @@ def vrati_poruku(predvidjeni_bodovi, realni_bodovi):
                         'Ne smiješ odustati! Probaj više vježbati.', 'Vježbom do savršenstva.',
                         'Nemoj tugovati, uspjet ćeš savladati gradivo.', 'Možda da se vratiš na nižu razinu?',
                         'Samo polako i strpljivo! Tako ćeš postati bolji.']
-    if realni_bodovi > predvidjeni_bodovi:
+    if realni_bodovi > predvidjeni_bodovi or level * 100 * 0.8 <= realni_bodovi:
         rand = random.randint(0, len(pozitivne_poruke)-1)
         return pozitivne_poruke[rand]
     elif realni_bodovi == predvidjeni_bodovi or realni_bodovi > predvidjeni_bodovi-8:
