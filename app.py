@@ -1,7 +1,7 @@
-import bcrypt
 from flask import request, jsonify, redirect, url_for
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from database import User, determine_leaderboard_table, app, db
+from database import *
+from linear_regression import *
 from generate import generate_question, generate_choices
 from test_data import users_list
 
@@ -141,6 +141,25 @@ def send_answers():
     except ValueError as e:
         return jsonify({'message': e.args[0]}), 400
 
+    # Add scores
+    new_score = Score(current_user.id, game_mode, score)
+    db.session.add(new_score)
+    db.session.commit()
+
+    # AI
+    median = 0
+    scores = get_last_3_scores(game_mode=game_mode, user_id=current_user.id)
+    for value in scores:
+        median += value.score
+    if not len(scores) == 0:
+        median = median / len(scores)
+
+    last_score = get_last_score(user_id=current_user.id, game_mode=game_mode)
+
+    new_median = MedianValues(user_id=current_user.id, game_mode=game_mode, median=median, last_score=last_score)
+    db.session.merge(new_median)
+    db.session.commit()
+
     leaderboard = db.session.query(leaderboard_table).filter_by(user_id=current_user.id).first()
     if not leaderboard:
         # Create a new Leaderboard entry for the user
@@ -169,6 +188,11 @@ def get_leaderboard_of_last_game():
 @app.route('/leaderboard/<string:game_mode>', methods=['GET'])
 @login_required
 def get_leaderboard(game_mode):
+    # Train
+    model = treniraj(get_all_medians(game_mode), get_all_last_scores(game_mode))
+    # Predict
+    prediction = predvidi(get_last_score(game_mode, current_user.id), model)
+
     # Determine which leaderboard table to query
     try:
         leaderboard_table = determine_leaderboard_table(game_mode)
@@ -193,8 +217,10 @@ def get_leaderboard(game_mode):
         })
         ranking += 1
 
+    message = vrati_poruku(predvidjeni_bodovi=prediction, realni_bodovi=get_last_score(game_mode, current_user.id))
+
     # Return the leaderboard data as a JSON object
-    return jsonify({'items': leaderboard_list}), 200, {'Content-Type': 'application/json'}
+    return jsonify({'items': leaderboard_list, 'message': message}), 200, {'Content-Type': 'application/json'}
 
 
 if __name__ == '__main__':
