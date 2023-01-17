@@ -189,6 +189,7 @@ def send_answers():
 @login_required
 def get_leaderboard(game_mode):
     data = request.json
+    last_score = int(get_last_score(game_mode, current_user.id))
     message = None
 
     if get_count(game_mode) > 10 and data["afterGame"]:
@@ -197,7 +198,7 @@ def get_leaderboard(game_mode):
         # Train
         model = treniraj(get_all_medians(game_mode), get_all_last_scores(game_mode))
         # Predict
-        prediction = predvidi(get_last_score(game_mode, current_user.id), model)
+        prediction = predvidi(last_score, model)
         # Message
         message = vrati_poruku(predvidjeni_bodovi=prediction, realni_bodovi=get_last_score(game_mode, current_user.id),
                                level=level)
@@ -227,7 +228,8 @@ def get_leaderboard(game_mode):
         ranking += 1
 
     # Return the leaderboard data as a JSON object
-    return jsonify({'items': leaderboard_list, 'message': message}), 200, {'Content-Type': 'application/json'}
+    return jsonify({'items': leaderboard_list, 'message': message, 'score': last_score}), 200, \
+        {'Content-Type': 'application/json'}
 
 
 if __name__ == '__main__':
