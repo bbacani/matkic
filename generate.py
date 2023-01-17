@@ -13,19 +13,19 @@ def generate_question(game_mode, level):
     num2 = random.randint(*num_range)
 
     if game_mode == "addition":
-        question = f"Koliko je {num1} + {num2}?"
+        question = f"Koliko je \n{num1} + {num2}?"
         answer = num1 + num2
     elif game_mode == "subtraction":
-        question = f"Koliko je {num1} - {num2}?"
+        question = f"Koliko je \n{num1} - {num2}?"
         answer = num1 - num2
     elif game_mode == "multiplication":
-        question = f"Koliko je {num1} * {num2}?"
+        question = f"Koliko je \n{num1} * {num2}?"
         answer = num1 * num2
     elif game_mode == "division":
         # Make sure the dividend is divisible by the divisor
         dividend = num1 * num2
         divisor = num1
-        question = f"Koliko je {dividend} / {divisor}?"
+        question = f"Koliko je \n{dividend} / {divisor}?"
         answer = round(dividend / divisor)
     else:
         raise ValueError("Invalid game mode")
