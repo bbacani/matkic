@@ -125,6 +125,8 @@ def get_last_3_scores(game_mode, user_id):
 
 def get_last_score(game_mode, user_id):
     last_score = db.session.query(Score).filter_by(game_mode=game_mode, user_id=user_id).order_by(desc(Score.id)).first()
+    if last_score is None:
+        return 0
     return last_score.score
 
 
